@@ -32,7 +32,7 @@ func handler(ctx context.Context, events events.S3Event) {
 	svc := sqs.New(sess)
 
 	queueURL, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: aws.String("optima-parserstore-dev"),
+		QueueName: aws.String("optima-parserstore-test"),
 	})
 	if err != nil {
 		fmt.Println("error in getting queue url")
@@ -44,24 +44,24 @@ func handler(ctx context.Context, events events.S3Event) {
 			strings.Contains(strings.ToLower(record.EventName), "copy") ||
 			strings.Contains(strings.ToLower(record.EventName), "post") {
 
-					message := MessageFiltered{
-						BucketName:  s3.Bucket.Name,
-						KeyName:     s3.Object.Key,
-						EventName:   record.EventName,
-						EventSource: record.EventSource,
-					}
-					jsonData, err := json.Marshal(message)
-					if err != nil {
-						fmt.Println("error in json serializing")
-					}
-					_, errs := svc.SendMessage(&sqs.SendMessageInput{
-						QueueUrl:     queueURL.QueueUrl,
-						MessageBody:  aws.String(string(jsonData)),
-						DelaySeconds: aws.Int64(0),
-					})
-					if errs != nil {
-						fmt.Println("error on sending message", errs)
-					}
+			message := MessageFiltered{
+				BucketName:  s3.Bucket.Name,
+				KeyName:     s3.Object.Key,
+				EventName:   record.EventName,
+				EventSource: record.EventSource,
+			}
+			jsonData, err := json.Marshal(message)
+			if err != nil {
+				fmt.Println("error in json serializing")
+			}
+			_, errs := svc.SendMessage(&sqs.SendMessageInput{
+				QueueUrl:     queueURL.QueueUrl,
+				MessageBody:  aws.String(string(jsonData)),
+				DelaySeconds: aws.Int64(0),
+			})
+			if errs != nil {
+				fmt.Println("error on sending message", errs)
+			}
 
 		}
 
