@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"log"
 	"strings"
 )
 
@@ -35,7 +35,7 @@ func handler(ctx context.Context, events events.S3Event) {
 		QueueName: aws.String("optima-parserstore-test"),
 	})
 	if err != nil {
-		fmt.Println("error in getting queue url")
+		log.Printf("error in getting queue url")
 	}
 	for _, record := range events.Records {
 		s3 := record.S3
@@ -52,7 +52,7 @@ func handler(ctx context.Context, events events.S3Event) {
 			}
 			jsonData, err := json.Marshal(message)
 			if err != nil {
-				fmt.Println("error in json serializing")
+				log.Printf("error in json serializing")
 			}
 			_, errs := svc.SendMessage(&sqs.SendMessageInput{
 				QueueUrl:     queueURL.QueueUrl,
@@ -60,7 +60,7 @@ func handler(ctx context.Context, events events.S3Event) {
 				DelaySeconds: aws.Int64(0),
 			})
 			if errs != nil {
-				fmt.Println("error on sending message", errs)
+				log.Printf("error on sending message", errs)
 			}
 
 		}
